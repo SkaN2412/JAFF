@@ -15,14 +15,13 @@ class inviTemplater {
 	//Variables for current template, filles with method "parse"
 	private $vars;
 
-	/**
+    /**
      * Constructor sets directory with templates
-     * 
-     * @param string $dir [optional] Directory with templates. If not given, should get from config
-     * @throws inviException #10001: Directory does no exist
-     * @return void
+     *
+     * @param string $dir
+     * @throws inviException
      */
-	public function __construct($dir = "") {
+    public function __construct($dir = "") {
         if ( $dir == "" )
         {
             $dir = Config::get("system/templatesDir");
