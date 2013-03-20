@@ -9,40 +9,27 @@ class Config {
     public static function get($what)
     {
         // Get data from config (with categories)
-        $config = parse_ini_file("system".DS."config.ini", TRUE);
+        $config = self::loadConfig();
 
-        $tree = explode("/", $what);
-
-        $value = $config[$tree[0]];
-
-        for ( $i=1; $i<count($tree); $i++ )
+        if ( ${self::getVarName( $what )} === FALSE )
         {
-            if ( ! isset( $value[$tree[$i]] ) )
-            {
-                $value =  FALSE;
-            } else {
-                $value = $value[$tree[$i]];
-            }
+            $value = FALSE;
+        } else {
+            $value = ${self::getVarName( $what )};
         }
+
         return $value;
     }
 
     public static function edit( $what, $nValue )
     {
-        $config = parse_ini_file("system".DS."config.ini", TRUE);
+        $config = self::loadConfig();
 
-        $tree = explode("/", $what);
-
-        $value = $config[$tree[0]];
-
-        for ( $i=1; $i<count($tree); $i++ )
+        if ( ${self::getVarName( $what )} === FALSE )
         {
-            if ( ! isset( $value[$tree[$i]] ) )
-            {
-                return  FALSE;
-            } else {
-                $value[$tree[$i]] = $nValue;
-            }
+            return FALSE;
+        } else {
+            ${self::getVarName( $what )} = $nValue;
         }
 
         self::writeIntoFile($value);
@@ -50,23 +37,28 @@ class Config {
 
     public static function remove( $what )
     {
-        $config = parse_ini_file("system".DS."config.ini", TRUE);
+        $config = self::loadConfig();
 
-        $tree = explode("/", $what);
-
-        $value = $config[$tree[0]];
-
-        for ( $i=1; $i<count($tree); $i++ )
+        if ( ${self::getVarName( $what )} === FALSE )
         {
-            if ( ! isset( $value[$tree[$i]] ) )
-            {
-                return FALSE;
-            } else {
-                unset( $value[$tree[$i]] );
-            }
+            return FALSE;
+        } else {
+            unset( ${self::getVarName( $what )} );
         }
 
         self::writeIntoFile($value);
+    }
+
+    private static function loadConfig()
+    {
+        return parse_ini_file("system".DS."config.ini", TRUE);
+    }
+
+    private static function getVarName( $what )
+    {
+        $tree = explode("/", $what);
+
+        return "\$config[{$tree[0]}][{$tree[1]}]";
     }
 
     private static function writeIntoFile($config)
