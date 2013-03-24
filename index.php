@@ -23,21 +23,32 @@ try
         include_once( $m );
     }
 
-    // Know, which command to execute. If nothing is given, execute default command
+    // If there's any command given, execute it
     if ( isset( $_GET['query'] ) )
     {
         $query = $_GET['query'];
-        // Let's execute command!
         inviAPI::execute( $query );
         exit;
     }
 
-    if( isset( $_GET['page'] ) && in_array( $_GET['page'], $accepted_list ) ) {
+    if( isset( $_GET['page'] ) ) {
         $page = $_GET['page'];
     } else {
-        $page = "main"; // TODO: main из конфига
+        $page = Config::get( "system/mainPage" );
     }
-    // Renderer::render($page);
+
+    if ( file_exists( "pages".DS.$page.".php" ) && in_array( $_GET['page'], $accepted_list ) )
+    {
+        // If page exists and it's in the accepted list, execute it
+
+        include_once( "pages".DS.$page.".php" );
+        exit;
+    } else {
+        // If not, generate 404
+
+        header( "HTTP/1.1 404 Not Found" );
+        exit;
+    }
 
 }catch(Exception $e){
     print( "Unknown error." );

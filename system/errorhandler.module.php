@@ -71,9 +71,9 @@ class inviErrorHandler
     /**
      * Function handles error
      *
-     * @param $errno Code of error
-     * @param $file File, that generated error
-     * @param $trace Stack of function behind the error
+     * @param int $errno Code of error
+     * @param string $file File, that generated error
+     * @param string $trace Stack of function behind the error
      * @param string $error [optional] Explaining of the error
      */
     public static function handle($errno, $file, $trace, $error = NULL)
