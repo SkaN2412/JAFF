@@ -26,7 +26,7 @@ class inviErrorHandler
      * @param string $lf [optional] Logging format: "html" or "plain". Default is "html"
      * @param string $pf [optional] Printing format. Similar as logging
      */
-    public static function __init($mode, $logfile = "log.html", $lf = "html", $pf = "html")
+    public static function __init($mode, $errorsClass, $logfile = "log.html", $lf = "html", $pf = "html")
     {
         // Define hadling mode
         switch ($mode)
@@ -47,6 +47,13 @@ class inviErrorHandler
                 self::$printing = true;
                 self::$logging = true;
                 break;
+        }
+
+        if ( class_exists( $errorsClass ) )
+        {
+            self::$errors = $errorsClass;
+        } else {
+            return false;
         }
 
         // Define and create logfile, if it does not exist
@@ -71,15 +78,13 @@ class inviErrorHandler
     /**
      * Function handles error
      *
-     * @param int $errno Code of error
-     * @param string $file File, that generated error
-     * @param string $trace Stack of function behind the error
-     * @param string $error [optional] Explaining of the error
+     * @param int $errno Error code
+     * @param int $error [optional] Error text
      */
-    public static function handle($errno, $file, $trace, $error = NULL)
+    public static function handle($date, $file, $trace)
     {
         self::$errno = $errno;
-        self::$date = date("c");
+        self::$date = $date;
         self::$file = $file;
         self::$trace = $trace;
 
@@ -111,20 +116,11 @@ class inviErrorHandler
         file_put_contents( self::$logfile, $content . self::prepareData("l") );
     }
 
-    /**
-     * Method prepares data for logging or printing
-     *
-     * @param string $for Sould be "l" or "p" - log or print coordination
-     * @return string Filled template
-     */
     protected static function prepareData( $for )
     {
         $templater = new inviTemplater();
 
-        // Var $for contains "l" or "f" in case of log or print data needed coordination. self::$lf and self::$pf contains log format and print format coordination. So $load will match this template: (plain|html)Error
-        $load = self::${$for."f"} . "Error";
-
-        /*switch ($for)
+        switch ($for)
         {
             case "p":
                 switch (self::$pf)
@@ -148,15 +144,15 @@ class inviErrorHandler
                         break;
                 }
                 break;
-        }*/
+        }
 
         $templater->load($load);
         return $templater->parse( array(
-                   'errno' => self::$errno,
-                   'error' => self::$error,
-                   'file' => self::$file,
-                   'date' => self::$date,
-                   'trace' => self::$trace
-               ) );
+            'errno' => self::$errno,
+            'error' => self::$error,
+            'file' => self::$file,
+            'date' => self::$date,
+            'trace' => self::$trace
+        ) );
     }
 }

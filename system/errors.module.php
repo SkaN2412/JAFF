@@ -1,23 +1,15 @@
 <?php
 class inviErrors
 {
-    // Constants with errors' codes
-    const DB_AUTH_FAIL = 10001;
-    const FILE_NOT_FOUND = 10002;
+    protected static $errors = array(
+        'DB_AUTH_FAIL' => array(
+            'num' => 10001,
+            'msg' => "DB authorize failed"
+        )
+    );
 
-    /**
-     * @param int $code Code of error
-     * @return string Explaining of the error
-     */
-    public static function getMessage($code) {
-        switch($code) {
-            case self::DB_AUTH_FAIL:
-                $s = "DB authorize failed";
-                break;
-
-            default:
-                $s = "";
-        }
-        return $s;
+    public static function get( $error )
+    {
+        return self::$errors[$error];
     }
 }

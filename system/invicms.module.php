@@ -4,7 +4,7 @@
  *
  * @author Andrey "SkaN" Kamozin <andreykamozin@gmail.com>
  */
-class inviCMS {
+class System {
     /**
      * Method inserts your content into main template and prints it
      * 
@@ -29,6 +29,23 @@ class inviCMS {
         
         // Parse & print
         print( $templater->parse( $params ) );
+    }
+
+    public static function required()
+    {
+        $modules = func_get_args();
+
+        foreach ( $modules as $m )
+        {
+            $m = "system" . DS . $m . ".module.php";
+
+            if ( ! file_exists( $m ) )
+            {
+                inviErrorHandler::handle( inviErrors::FILE_NOT_FOUND, __FILE__ . ":" . __LINE__, "...", "Module {$m} not found" );
+            }
+
+            include_once( $m );
+        }
     }
 }
 

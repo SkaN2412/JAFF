@@ -2,25 +2,19 @@
 // Construction is needed here for avoiding uncaught exceptions TO CRASH EVERYTHING
 try
 {
-    // Required modules
-    $modules = array(
-        'errorhandler',
-        'api',
-        'config',
-        'acceptedpages'
-    );
+    define( "DS", DIRECTORY_SEPARATOR );
+    include_once( "system".DS."invicms.module.php" );
+    include_once( "system".DS."acceptedpages.php" );
 
     // Include required modules
-    foreach ( $modules as $m )
+    System::required( "errorhandler", "errors", "exceptions", "templater", "config", "api" );
+
+    // If admin panel is asked, work in it's directory. Else - root directory
+    if ( isset( $_GET['admin'] ) ) // TODO: adminka
     {
-        $m .= ".module.php";
-
-        if ( ! file_exists( $m ) )
-        {
-            inviErrorHandler::handle( inviErrors::FILE_NOT_FOUND, __FILE__ . ":" . __LINE__, "...", "Module {$m} not found" );
-        }
-
-        include_once( $m );
+        $dir = "admin" . DS;
+    } else {
+        $dir = "";
     }
 
     // If there's any command given, execute it
@@ -34,14 +28,14 @@ try
     if( isset( $_GET['page'] ) ) {
         $page = $_GET['page'];
     } else {
-        $page = Config::get( "system/mainPage" );
+        $page = "main";
     }
 
-    if ( file_exists( "pages".DS.$page.".php" ) && in_array( $_GET['page'], $accepted_list ) )
+    if ( file_exists( $dir."pages".DS.$page.".php" ) && in_array( $page, $accepted_list ) )
     {
         // If page exists and it's in the accepted list, execute it
 
-        include_once( "pages".DS.$page.".php" );
+        include_once( $dir."pages".DS.$page.".php" );
         exit;
     } else {
         // If not, generate 404

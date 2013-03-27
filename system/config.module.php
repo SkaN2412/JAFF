@@ -11,11 +11,13 @@ class Config {
         // Get data from config (with categories)
         $config = self::loadConfig();
 
-        if ( ${self::getVarName( $what )} === FALSE )
+        $tree = explode("/", $what);
+
+        if ( $config[$tree[0]][$tree[1]] === FALSE )
         {
             $value = FALSE;
         } else {
-            $value = ${self::getVarName( $what )};
+            $value = $config[$tree[0]][$tree[1]];
         }
 
         return $value;
@@ -25,40 +27,37 @@ class Config {
     {
         $config = self::loadConfig();
 
-        if ( ${self::getVarName( $what )} === FALSE )
+        $tree = explode("/", $what);
+
+        if ( $config[$tree[0]][$tree[1]] === FALSE )
         {
             return FALSE;
         } else {
-            ${self::getVarName( $what )} = $nValue;
+            $config[$tree[0]][$tree[1]] = $nValue;
         }
 
-        self::writeIntoFile($value);
+        self::writeIntoFile($config);
     }
 
     public static function remove( $what )
     {
         $config = self::loadConfig();
 
-        if ( ${self::getVarName( $what )} === FALSE )
+        $tree = explode("/", $what);
+
+        if ( $config[$tree[0]][$tree[1]] === FALSE )
         {
             return FALSE;
         } else {
-            unset( ${self::getVarName( $what )} );
+            unset( $config[$tree[0]][$tree[1]] );
         }
 
-        self::writeIntoFile($value);
+        self::writeIntoFile($config);
     }
 
     private static function loadConfig()
     {
         return parse_ini_file("system".DS."config.ini", TRUE);
-    }
-
-    private static function getVarName( $what )
-    {
-        $tree = explode("/", $what);
-
-        return "\$config[{$tree[0]}][{$tree[1]}]";
     }
 
     private static function writeIntoFile($config)
