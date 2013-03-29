@@ -13,11 +13,18 @@ class Config {
 
         $tree = explode("/", $what);
 
-        if ( $config[$tree[0]][$tree[1]] === FALSE )
+        if ( count( $tree ) === 1 )
+        {
+            $link = &$config[$tree[0]];
+        } else {
+            $link = &$config[$tree[0]][$tree[1]];
+        }
+
+        if ( $link === FALSE )
         {
             $value = FALSE;
         } else {
-            $value = $config[$tree[0]][$tree[1]];
+            $value = $link;
         }
 
         return $value;
@@ -29,11 +36,18 @@ class Config {
 
         $tree = explode("/", $what);
 
-        if ( $config[$tree[0]][$tree[1]] === FALSE )
+        if ( count( $tree ) === 1 )
+        {
+            $link = &$config[$tree[0]];
+        } else {
+            $link = &$config[$tree[0]][$tree[1]];
+        }
+
+        if ( $link === FALSE )
         {
             return FALSE;
         } else {
-            $config[$tree[0]][$tree[1]] = $nValue;
+            $link = $nValue;
         }
 
         self::writeIntoFile($config);
@@ -45,11 +59,18 @@ class Config {
 
         $tree = explode("/", $what);
 
-        if ( $config[$tree[0]][$tree[1]] === FALSE )
+        if ( count( $tree ) === 1 )
+        {
+            $link = &$config[$tree[0]];
+        } else {
+            $link = &$config[$tree[0]][$tree[1]];
+        }
+
+        if ( $link === FALSE )
         {
             return FALSE;
         } else {
-            unset( $config[$tree[0]][$tree[1]] );
+            unset( $link );
         }
 
         self::writeIntoFile($config);
