@@ -23,4 +23,3 @@ final class inviException extends Exception {
         inviErrorHandler::handle(parent::getCode(), parent::getFile() . ":" . parent::getLine(), parent::getTraceAsString(), parent::getMessage());
     }
 }
-?>

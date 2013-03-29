@@ -4,7 +4,6 @@ try
 {
     define( "DS", DIRECTORY_SEPARATOR );
     include_once( "system".DS."invicms.module.php" );
-    include_once( "system".DS."acceptedpages.php" );
 
     // Include required modules
     System::required( "errorhandler", "errors", "exceptions", "templater", "config", "api" );
@@ -31,7 +30,8 @@ try
         $page = "main";
     }
 
-    if ( file_exists( $dir."pages".DS.$page.".php" ) && in_array( $page, $accepted_list ) )
+    $acceptedPages = explode( "\n", file_get_contents( "system".DS."acceptedpages" ) );
+    if ( file_exists( $dir."pages".DS.$page.".php" ) && in_array( $page, $acceptedPages ) )
     {
         // If page exists and it's in the accepted list, execute it
 

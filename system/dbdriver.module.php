@@ -329,4 +329,3 @@ class inviDBDriver {
             return $data;
         }
 }
-?>

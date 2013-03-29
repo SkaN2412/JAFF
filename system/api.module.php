@@ -1,23 +1,24 @@
 <?php
-/**
- * Created by Andrey Kamozin
- * User: andrey
- * Date: 11.02.13
- * Time: 12:49
- */
 class inviAPI
 {
     public static function execute( $query )
     {
-        // TODO: create function
+        // Prepare query
+        $stack = explode( ".", $query );
 
-        $stack = explode( ".", $query ); // "blog.article.125"
+        // Get accepted AJAX files
+        $acceptedAjax = explode( "\n", file_get_contents( "system".DS."acceptedajax" ) );
 
-        // If system is called, execute system command
-        if ( $stack[0] == "system" )
+        // If file's accepted and exists, include it
+        if ( in_array($stack[0], $acceptedAjax) && file_exists( "ajax".DS.$stack[0].".php" ) )
         {
-
+            include( "ajax".DS.$stack[0].".php" );
         }
+
+        // Execute function
+        $result = $stack[1]::$stack[2]();
+
+        // Convert returned array to JSON format and return it to script
+        print(json_encode($result));
     }
 }
-?>
