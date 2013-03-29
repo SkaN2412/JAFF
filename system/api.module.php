@@ -7,7 +7,7 @@ class inviAPI
         $stack = explode( ".", $query );
 
         // Get accepted AJAX files
-        $acceptedAjax = explode( "\n", file_get_contents( "system".DS."acceptedajax" ) );
+        $acceptedAjax = file( "system".DS."acceptedajax", FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES );
 
         // If file's accepted and exists, include it
         if ( in_array($stack[0], $acceptedAjax) && file_exists( "ajax".DS.$stack[0].".php" ) )
