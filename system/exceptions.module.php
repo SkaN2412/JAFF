@@ -16,7 +16,7 @@ final class inviException extends Exception {
      * @param int $errno Code of error
      * @param string $error Error message
      */
-    public function __construct( $error, $errno = NULL )
+    public function __construct( $errno, $error = NULL )
     {
         parent::__construct($error, (int)$errno);
 

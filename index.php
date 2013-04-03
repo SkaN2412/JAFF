@@ -6,7 +6,13 @@ try
     include_once( "system".DS."invicms.module.php" );
 
     // Include required modules
-    System::required( "errorhandler", "errors", "exceptions", "templater", "config", "api" );
+    System::required(
+        "errorhandler",
+        "errors",
+        "exceptions",
+        "templater",
+        "config"
+    );
 
     // If admin panel is asked, work in it's directory. Else - root directory
     if ( isset( $_GET['admin'] ) ) // TODO: adminka
@@ -19,6 +25,7 @@ try
     // If there's any command given, execute it
     if ( isset( $_GET['query'] ) )
     {
+        System::required( "api" );
         $query = $_GET['query'];
         inviAPI::execute( $query );
         exit;

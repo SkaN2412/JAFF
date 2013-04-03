@@ -13,12 +13,8 @@ class inviPDO extends PDO {
     public $stmt;
 
     /**
-    * Method for connect to database
-    * 
-    * @throws inviException In case of connection error
-    * @return void
-    */
-    
+     * Open connection with database
+     */
     public function __construct()
     {
         // Get database server data from config
@@ -27,19 +23,18 @@ class inviPDO extends PDO {
         try { // Try to connect
             parent::__construct("mysql:host={$conn_data['server']};dbname={$conn_data['db']}", $conn_data['login'], $conn_data['password']);
         } catch ( PDOException $e ) { // If there's any errors, throw exception
-            throw new inviException( (int)$e->getCode(), $e->getMessage() );
+            throw new inviException( inviErrors::DB_CONN_FAIL, "[{$e->getCode}] {$e->getMessage}" );
         }
 
         // Errors will throw exceptions
         $this->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_SILENT);
     }
-    
+
     /**
-     * Method executes query given with data if any.
-     * 
-     * @param type $query
-     * @param type $data
-     * @throws inviException In case of MySQL error
+     * @param string $query SQL statement
+     * @param array $data Array with data for statement, if any needed
+     * @return void
+     * @throws inviException
      */
     public function query($query, $data = array())
     {
@@ -53,14 +48,14 @@ class inviPDO extends PDO {
         if ( $this->stmt->errorCode() != "00000" )
         {
             $error = $this->stmt->errorInfo();
-            throw new inviException( $error[0], $error[2] );
+            throw new inviException( inviErrors::DB_EXEC_FAIL, "[{$error[0]}]: {$error[2]}" );
         }
     }
 
     /**
      * Method fetch is required for getting data returned by server
      * 
-     * @param string $fetch_mode Should be assoc or num. If unknown mode given, will be fetched assoc
+     * @param string $fetch_mode Should be "assoc" or "num". If unknown mode given, will be fetched assoc
      * @return array Multi-dimensional array with data returned or NULL
      */
     public function fetch($fetch_mode = "assoc")

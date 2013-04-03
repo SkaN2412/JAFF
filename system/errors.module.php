@@ -1,15 +1,7 @@
 <?php
 class inviErrors
 {
-    protected static $errors = array(
-        'DB_AUTH_FAIL' => array(
-            'num' => 10001,
-            'msg' => "DB authorize failed"
-        )
-    );
-
-    public static function get( $error )
-    {
-        return self::$errors[$error];
-    }
+    const FILE_NOT_FOUND = 10001;
+    const DB_CONN_FAIL = 10002;
+    const DB_EXEC_FAIL = 10003;
 }
