@@ -8,7 +8,7 @@ class inviPDO extends PDO {
     /**
      * This variable init object of PDOStatement class
      * 
-     * @var object Object of PDOStatement class
+     * @var PDOStatement Object of PDOStatement class
      */
     public $stmt;
 

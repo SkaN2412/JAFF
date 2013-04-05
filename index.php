@@ -11,7 +11,9 @@ try
         "errors",
         "exceptions",
         "templater",
-        "config"
+        "config",
+        "invipdo",
+        "dbkeeper"
     );
 
     // If admin panel is asked, work in it's directory. Else - root directory

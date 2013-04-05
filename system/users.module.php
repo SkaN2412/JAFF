@@ -5,32 +5,40 @@
  */
 class User
 {
-    /*
-     * function register() adds user to DB and euthorizes him
+    /**
+     * Adds user to database
+     *
+     * @param string $login Login wanted
+     * @param string $password Password
+     * @param string $email Email
+     * @throws inviException
      */
     public static function register($login, $password, $email)
     {
-        // Check, is user authorized. If authorized, he's trying to hack system
+        // Check, is user authorized. If authorized, deny registration
         @session_start();
         if ( isset($_SESSION['authorized']) )
         {
-            throw new inviException(7, "Can't register while authorized.");
+            throw new inviException( inviErrors::USR_AUTHD );
         }
         
         // Connect to DB
-        $DBH = new inviPDO();
+        $DBH = DB::$conn;
         
         // Check login given for existing
         if ( self::isRegistered($login) )
         {
-            throw new inviException(1, "This login is already registered");
+            throw new inviException( inviErrors::USR_REGISTERED );
         }
         
         // Check email given for existing
-        $DBH->query( "SELECT `email` FROM `users` WHERE `email` = :email", array( 'email' => $email ) );
+        $DBH->selectEntry( "users", array(
+            'rows' => "email",
+            'cases' => array( 'email' => $email )
+        ) );
         if ( $DBH->stmt->rowCount() > 0 )
         {
-            throw new inviException(2, "This email is already used");
+            throw new inviException( inviErrors::USR_EMAIL_USED );
         }
         
         // All is right, user with data given does not exist. Now generate password hash with Bcrypt class
@@ -38,23 +46,22 @@ class User
         $hash = $crypt->hash($password);
         
         // And now insert data into DB
-        $stmtParams = array(
+        $DBH->insertData( "users", array(
             'login' => $login,
             'password' => $hash,
             'email' => $email
-        );
-        $result = $DBH->query("INSERT INTO `users` (`login`, `password`, `email`) VALUES (:login, :password, :email)", $stmtParams );
-        if ( ! $result )
-        {
-            throw new inviException(3, "MySQL error: {$DBH->stmt->errorInfo()}");
-        }
-        
+        ) );
+
         // Now authorize user
         self::authorize($login, $password);
     }
-   /*
-    * authorize() checks password correctness and authorize user. Information about user you can get with get($what) method of this class
-    */
+
+    /**
+     * Authorize user
+     *
+     * @return void
+     * @throws inviException
+     */
     public static function authorize()
     {
         // Check for user data in session. If there's one, auth user.
@@ -69,36 +76,40 @@ class User
         }
         
         // Connect to DB
-        $DBH = new inviPDO();
+        $DBH = DB::$conn;
         
         // Generate hash of password
         $crypt = new Bcrypt(15);
         $hash = $crypt->hash($password);
         
         // Get data from DB
-        $DBH->query( "SELECT * FROM `users` WHERE `login` = :login", array( 'login' => $login ) );
+        $userData = $DBH->selectEntry( "users", array(
+            'login' => $login
+        ) );
         // If nothing is returned, throw exception
         if ( $DBH->stmt->rowCount() < 1 )
         {
-            throw new inviException(4, "Login is not registered");
+            throw new inviException( inviErrors::USR_NOT_REGISTERED );
         }
-        $userData = $DBH->fetch();
-        $userData = $userData[0];
         
         // Check password correctness
         if ( ! $crypt->verify( $password, $userData['password'] ) )
         {
-            throw new inviException(5, "Incorrect password");
+            throw new inviException( inviErrors::USR_WRONG_PASSWD );
         }
         
         // Insert data into session variables
         unset($userData['password']);
         $_SESSION['authorized'] = TRUE;
         $_SESSION = array_merge($_SESSION, $userData);
-        return TRUE;
     }
-    /*
-     * Method get() returns data of user. It requires login and returns array with data.
+
+    /**
+     * Returns user's data
+     *
+     * @param string $login [optional] Login of user. If not given, will return current user's data
+     * @return array Array with data
+     * @throws inviException
      */
     public static function get($login = NULL)
     {
@@ -106,62 +117,57 @@ class User
         if ( $login == NULL )
         {
             $return = array(
-                'login' => $_SESSION['login'],
-                'email' => $_SESSION['email'],
-                'group' => $_SESSION['group'],
+                'login'         => $_SESSION['login'],
+                'email'         => $_SESSION['email'],
+                'group'         => $_SESSION['group'],
                 'blocked_until' => $_SESSION['blocked_until']
             );
             return $return;
         }
         
         // Connect to DB
-        $DBH = new inviPDO();
+        $DBH = DB::$conn;
         
         // Select data
-        $DBH->query( "SELECT `login`, `email`, `group`, `blocked_until` FROM `users` WHERE `login` = :login", array( 'login' => $login ) );
-        
+        $result = $DBH->selectEntry( "users", array( 'login' => $login ), "login, email, group, blocked_until" );
+
         // If nothing is returned, throw exception
         if ( $DBH->stmt->rowCount() < 1 )
         {
-            throw new inviException(4, "Login is not registered");
+            throw new inviException( inviErrors::USR_NOT_REGISTERED );
         }
-        $result = $DBH->fetch();
-        return $result[0];
+
+        return $result;
     }
-    /*
-     * changePassword() requires old password and new password. User must be authorized - login will be taken from auth-data. 
+
+    /**
+     * Changes password
+     *
+     * @param string $password Current password
+     * @param string $newPassword New password
+     * @return void
+     * @throws inviException
      */
-    public static function chandePassword($password, $newPassword)
+    public static function changePassword($password, $newPassword)
     {
         // Connect to DB
-        $DBH = new inviPDO();
+        $DBH = DB::$conn;
         
         // Take login from class property
         $login = self::$login;
         
         // Check, is the old password correct
-        $DBH->query( "SELECT `password` FROM `users` WHERE `login` = :login", array( 'login' => $login ) );
-        $checkPassword = $DBH->fetch();
-        $checkPassword = $checkPassword[0];
+        $checkPassword = $DBH->selectEntry( "users", array( 'login' => $login ), "password" );
         
         // Check password correctness
         $crypt = new Bcrypt(15);
         if ( $crypt->hash($password) != $checkPassword['password'] )
         {
-            throw new inviException(5, "Incorrect password");
+            throw new inviException( inviErrors::USR_WRONG_PASSWD );
         }
         
         // Update password in DB
-        $stmtParams = array(
-            'password' => $crypt->hash($newPassword),
-            'login' => $login
-        );
-        $result = $DBH->query( "UPDATE `users` SET `password` = :password WHERE `login` = :login", $stmtParams );
-        if ( $stmt->rowCount() < 1 || ! $result )
-        {
-            throw new inviException(6, "Unknown error, nothing is changed");
-        }
-        return TRUE;
+        $DBH->updateData( "users", array( 'password' => $crypt->hash($newPassword) ), array( 'login' => $login ) );
     }
     /*
      * generateRecoveryKey() returns key, that must be given for change password
@@ -177,16 +183,21 @@ class User
     {
 
     }
-    /*
-     * This private method is needed for checking user registered
+
+    /**
+     * Check, is user already registered or not
+     *
+     * @param string $login Login to check
+     * @return bool
      */
     private static function isRegistered($login)
     {
         // Connect to DB
-        $DBH = new inviPDO();
+        $DBH = DB::$conn;
         
         // Select entry with this login
-        $DBH->query( "SELECT `login` FROM `users` WHERE `login` = :login", array( 'login' => $login ) );
+        $DBH->selectEntry( "users", array( 'login' => $login ), "login" );
+
         if ( $DBH->stmt->rowCount() < 1 )
         {
             return FALSE;
