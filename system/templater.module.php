@@ -10,19 +10,18 @@ class inviTemplater {
 	public $version = "3.4beta";
 	//Directory with templates
 	private $dir;
-	//Content of current template, filles with method "load"
+	//Content of current template, fills with method "load"
 	private $content;
-	//Variables for current template, filles with method "parse"
+	//Variables for current template, fills with method "parse"
 	private $vars;
 
-	/**
-     * Constructor sets directory with templates
-     * 
-     * @param string $dir [optional] Directory with templates. If not given, should get from config
-     * @throws inviException #10001: Directory does no exist
-     * @return void
+    /**
+     * Defines directory with templates
+     *
+     * @param string $dir
+     * @throws inviException
      */
-	public function __construct($dir = "") {
+    public function __construct($dir = "") {
         if ( $dir == "" )
         {
             $dir = Config::get("system/templatesDir");
@@ -35,7 +34,7 @@ class inviTemplater {
 		//If directory doesn't exist, throw exception
 		if (!is_dir($dir))
 		{
-			throw new inviException(10001, "Directory {$dir} does not exist.");
+			throw new inviException( inviErrors::FILE_NOT_FOUND );
 		}
 		//Set $this->dir
 		$this->dir = $dir.DS;
@@ -44,12 +43,12 @@ class inviTemplater {
 	/**
      * Loads template which should parse
      * 
-     * @param string $page Template to load wothout extension
-     * @throws inviException #10001: File does not exist; #10002: File is empty
+     * @param string $page Template to load without extension
+     * @throws inviException
      * @return void
      */
 	public function load($page) {
-		//Check existing file and check, is it with .htm or .html extention
+		//Check existing file and check, is it with .htm or .html extension
 		if (file_exists($this->dir.$page.".htm"))
 		{
 			$file = $this->dir.$page.".htm";
@@ -58,21 +57,23 @@ class inviTemplater {
 		} else {
 			throw new inviException(10001, "File {$this->dir}{$page}.htm(l) does not exist.");
 		}
-		//Check emptyness of file
-		if (!filesize($file))
-		{
-			throw new inviException(10002, "File ".$file." is empty");
-		}
+
 		//Fill $this->content with file contents
 		$this->content = file_get_contents($file);
 	}
-	
-	//Loading file and parsing it
-	public function parse($vars) {
+
+    /**
+     * Start parsing
+     *
+     * @param array $vars Data to insert to template
+     * @return string mixed Filled array
+     * @throws inviException
+     */
+    public function parse($vars) {
 		//Vars must be an array!
 		if (!is_array($vars))
 		{
-			throw new inviException(10003, "\$vars is not array");
+			throw new inviException( inviErrors::TMPLTR_NOT_ARRAY_GIVEN );
 		}
 		$this->vars = $vars;
 		unset($vars);
@@ -108,7 +109,7 @@ class inviTemplater {
 		preg_match('/\{var=\'(.*?)\'\}/', $match, $var);
 		if (!isset($this->vars[$var[1]]))
 		{
-			throw new inviException(10004, "Variable $".$var[1]." does not exist");
+			throw new inviException( inviErrors::TMPLTR_VAR_NOT_FOUND );
 		}
 		$code = str_replace($match, $this->vars[$var[1]], $code);
 		return $code;
@@ -123,13 +124,9 @@ class inviTemplater {
         	} elseif (file_exists($this->dir.$matches[1].".html")) {
 			$file = $this->dir.$matches[1].".html";
         	} else {
-			throw new inviException(10001, "File ".$this->dir.$matches[1].".htm(l) does not exist");
+			throw new inviException( inviErrors::FILE_NOT_FOUND, "File ".$this->dir.$matches[1].".htm(l) does not exist" );
 		}
-		//Check emptyness of file
-		if (!filesize($file))
-		{
-			throw new inviException(10002, "File ".$file." is empty");
-		}
+
 		$content = file_get_contents($file);
 		//Recursive parsing of code
 		$content = $this->parseCode($content);
@@ -142,15 +139,15 @@ class inviTemplater {
 		preg_match('|\{array=\'(\w+)\'\}((?:(?!\{/?array).)*){/array=\'\1\'}|s', $match, $matches);
 		if (!isset($this->vars[$matches[1]]))
 		{
-			throw new inviException(10004, "Variable $".$matches[1]." does not exist");
+			throw new inviException( inviErrors::TMPLTR_VAR_NOT_FOUND );
 		}
 		if (!is_array($this->vars[$matches[1]]))
 		{
-			throw new inviException(10005, "Variable $".$matches[1]." is not array");
+			throw new inviException( inviErrors::TMPLTR_VAR_NOT_ARRAY );
 		}
 		if (!isset($this->vars[$matches[1]][0]) || !is_array($this->vars[$matches[1]][0]))
 		{
-			throw new inviException(10006, "Array $".$matches[1]." is not multi-dimensional");
+			throw new inviException( inviErrors::TMPLTR_ARRAY_1DIM, "Array $".$matches[1]." is not multi-dimensional");
 		}
 		$coden = "";
 		//$coden (code new) is temp varible, which will have final content for replacing in $code. $temp is one-cycle variable, which will have only one entry and add it to $coden.
@@ -175,7 +172,7 @@ class inviTemplater {
 			case "==":
 				if (!isset($this->vars[$matches[1]]))
 				{
-					throw new inviException(10004, "Variable $".$matches[1]." does not exist");
+					throw new inviException( inviErrors::TMPLTR_VAR_NOT_FOUND, "Variable $".$matches[1]." does not exist");
 				}
 				if (isset($this->vars[$matches[3]])) {
 					if ($this->vars[$matches[1]] == $this->vars[$matches[3]]) {
@@ -199,7 +196,7 @@ class inviTemplater {
 			case "!=":
 				if (!isset($this->vars[$matches[1]]))
 				{
-					throw new inviException(10004, "Variable $".$matches[1]." does not exist");
+					throw new inviException( inviErrors::TMPLTR_VAR_NOT_FOUND, "Variable $".$matches[1]." does not exist");
 				}
 				if (isset($this->vars[$matches[3]])) {
 					if ($this->vars[$matches[1]] != $this->vars[$matches[3]]) {
@@ -223,7 +220,7 @@ class inviTemplater {
 			case "<=":
 				if (!isset($this->vars[$matches[1]]))
 				{
-					throw new inviException(10004, "Variable $".$matches[1]." does not exist");
+					throw new inviException( inviErrors::TMPLTR_VAR_NOT_FOUND, "Variable $".$matches[1]." does not exist");
 				}
 				if (isset($this->vars[$matches[3]])) {
 					if ($this->vars[$matches[1]] <= $this->vars[$matches[3]]) {
@@ -247,7 +244,7 @@ class inviTemplater {
 			case ">=":
 				if (!isset($this->vars[$matches[1]]))
 				{
-					throw new inviException(10004, "Variable $".$matches[1]." does not exist");
+					throw new inviException( inviErrors::TMPLTR_VAR_NOT_FOUND, "Variable $".$matches[1]." does not exist");
 				}
 				if (isset($this->vars[$matches[3]])) {
 					if ($this->vars[$matches[1]] >= $this->vars[$matches[3]]) {
@@ -271,7 +268,7 @@ class inviTemplater {
 			case "<":
 				if (!isset($this->vars[$matches[1]]))
 				{
-					throw new inviException(10004, "Variable $".$matches[1]." does not exist");
+					throw new inviException(inviErrors::TMPLTR_VAR_NOT_FOUND, "Variable $".$matches[1]." does not exist");
 				}
 				if (isset($this->vars[$matches[3]])) {
 					if ($this->vars[$matches[1]] < $this->vars[$matches[3]]) {
@@ -295,7 +292,7 @@ class inviTemplater {
 			case ">":
 				if (!isset($this->vars[$matches[1]]))
 				{
-					throw new inviException(10004, "Variable $".$matches[1]." does not exist");
+					throw new inviException( inviErrors::TMPLTR_VAR_NOT_FOUND, "Variable $".$matches[1]." does not exist");
 				}
 				if (isset($this->vars[$matches[3]])) {
 					if ($this->vars[$matches[1]] > $this->vars[$matches[3]]) {
@@ -337,7 +334,7 @@ class inviTemplater {
 				}
 				break;
 			default:
-				throw new inviException(10007, $matches[2]." is not a valid case");
+				throw new inviException( inviErrors::TMPLTR_NOT_VALID_CASE, $matches[2]." is not a valid case");
 		}
 		return $code;
 	}
