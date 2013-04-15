@@ -11,7 +11,7 @@ class inviErrors
     // Users manage errors
     const USR_AUTHD              = 10004;
     const USR_REGISTERED         = 10005;
-    const USR_EMAIL_USED         = 10006;
+    const USR_NICKNAME_USED      = 10006;
     const USR_NOT_REGISTERED     = 10007;
     const USR_WRONG_PASSWD       = 10008;
 

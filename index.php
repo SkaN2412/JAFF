@@ -3,7 +3,7 @@
 try
 {
     define( "DS", DIRECTORY_SEPARATOR );
-    include_once( "system".DS."invicms.module.php" );
+    include_once("system" . DS . "system.module.php");
 
     // Include required modules
     System::required(
@@ -17,8 +17,17 @@ try
     );
 
     // If admin panel is asked, work in it's directory. Else - root directory
-    if ( isset( $_GET['admin'] ) ) // TODO: adminka
+    if ( isset( $_GET['admin'] ) )
     {
+        User::authorize();
+
+        $group = User::get()['group'];
+        if ( $group !== "admin" )
+        {
+            header( "HTTP/1.1 404 Not Found" );
+            include_once( $dir."pages".DS."404.php" );
+        }
+
         $dir = "admin" . DS;
     } else {
         $dir = "";
@@ -50,6 +59,7 @@ try
         // If not, generate 404
 
         header( "HTTP/1.1 404 Not Found" );
+        include_once( $dir."pages".DS."404.php" );
         exit;
     }
 

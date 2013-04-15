@@ -8,12 +8,12 @@ class User
     /**
      * Adds user to database
      *
-     * @param string $login Login wanted
+     * @param string $nickname nickname wanted
      * @param string $password Password
      * @param string $email Email
      * @throws inviException
      */
-    public static function register($login, $password, $email)
+    public static function register($email, $password, $nickname)
     {
         // Check, is user authorized. If authorized, deny registration
         @session_start();
@@ -21,39 +21,36 @@ class User
         {
             throw new inviException( inviErrors::USR_AUTHD );
         }
-        
+
         // Connect to DB
         $DBH = DB::$conn;
-        
-        // Check login given for existing
-        if ( self::isRegistered($login) )
+
+        // Check email given for existing
+        if ( self::isRegistered($email) )
         {
             throw new inviException( inviErrors::USR_REGISTERED );
         }
-        
-        // Check email given for existing
-        $DBH->selectEntry( "users", array(
-            'rows' => "email",
-            'cases' => array( 'email' => $email )
-        ) );
+
+        // Check nickname given for existing
+        $DBH->selectEntry( "users", array( 'nickname' => $nickname ) );
         if ( $DBH->stmt->rowCount() > 0 )
         {
-            throw new inviException( inviErrors::USR_EMAIL_USED );
+            throw new inviException( inviErrors::USR_NICKNAME_USED );
         }
-        
+
         // All is right, user with data given does not exist. Now generate password hash with Bcrypt class
         $crypt = new Bcrypt(15);
         $hash = $crypt->hash($password);
-        
+
         // And now insert data into DB
         $DBH->insertData( "users", array(
-            'login' => $login,
+            'nickname' => $nickname,
             'password' => $hash,
             'email' => $email
         ) );
 
         // Now authorize user
-        self::authorize($login, $password);
+        self::authorize($email, $password);
     }
 
     /**
@@ -70,34 +67,31 @@ class User
         {
             return TRUE;
         } else {
-            // If there's nothing in session, get login and password from post variables
-            $login = $_POST['login'];
+            // If there's nothing in session, get nickname and password from post variables
+            $email = $_POST['email'];
             $password = $_POST['password'];
         }
-        
+
         // Connect to DB
         $DBH = DB::$conn;
-        
-        // Generate hash of password
-        $crypt = new Bcrypt(15);
-        $hash = $crypt->hash($password);
-        
+
         // Get data from DB
         $userData = $DBH->selectEntry( "users", array(
-            'login' => $login
+            'email' => $email
         ) );
         // If nothing is returned, throw exception
         if ( $DBH->stmt->rowCount() < 1 )
         {
             throw new inviException( inviErrors::USR_NOT_REGISTERED );
         }
-        
+
         // Check password correctness
+        $crypt = new Bcrypt(15);
         if ( ! $crypt->verify( $password, $userData['password'] ) )
         {
             throw new inviException( inviErrors::USR_WRONG_PASSWD );
         }
-        
+
         // Insert data into session variables
         unset($userData['password']);
         $_SESSION['authorized'] = TRUE;
@@ -107,29 +101,28 @@ class User
     /**
      * Returns user's data
      *
-     * @param string $login [optional] Login of user. If not given, will return current user's data
+     * @param string $email [optional] Email of user. If not given, will return current user's data
      * @return array Array with data
      * @throws inviException
      */
-    public static function get($login = NULL)
+    public static function get($email = NULL)
     {
-        // If $login isn't given, return data of current user
-        if ( $login == NULL )
+        // If $nickname isn't given, return data of current user
+        if ( $email == NULL )
         {
             $return = array(
-                'login'         => $_SESSION['login'],
+                'nickname'      => $_SESSION['nickname'],
                 'email'         => $_SESSION['email'],
-                'group'         => $_SESSION['group'],
-                'blocked_until' => $_SESSION['blocked_until']
+                'group'         => $_SESSION['group']
             );
             return $return;
         }
-        
+
         // Connect to DB
         $DBH = DB::$conn;
-        
+
         // Select data
-        $result = $DBH->selectEntry( "users", array( 'login' => $login ), "login, email, group, blocked_until" );
+        $result = $DBH->selectEntry( "users", array( 'email' => $email ), "nickname, email, group" );
 
         // If nothing is returned, throw exception
         if ( $DBH->stmt->rowCount() < 1 )
@@ -152,27 +145,27 @@ class User
     {
         // Connect to DB
         $DBH = DB::$conn;
-        
-        // Take login from class property
-        $login = self::$login;
-        
+
+        // Take nickname from class property
+        $email = self::get()['email'];
+
         // Check, is the old password correct
-        $checkPassword = $DBH->selectEntry( "users", array( 'login' => $login ), "password" );
-        
+        $checkPassword = $DBH->selectEntry( "users", array( 'email' => $email ), "password" );
+
         // Check password correctness
         $crypt = new Bcrypt(15);
         if ( $crypt->hash($password) != $checkPassword['password'] )
         {
             throw new inviException( inviErrors::USR_WRONG_PASSWD );
         }
-        
+
         // Update password in DB
-        $DBH->updateData( "users", array( 'password' => $crypt->hash($newPassword) ), array( 'login' => $login ) );
+        $DBH->updateData( "users", array( 'password' => $crypt->hash($newPassword) ), array( 'email' => $email ) );
     }
     /*
      * generateRecoveryKey() returns key, that must be given for change password
      */
-    public static function generateRecoveryKey($login)
+    public static function generateRecoveryKey($nickname)
     {
 
     }
@@ -187,16 +180,16 @@ class User
     /**
      * Check, is user already registered or not
      *
-     * @param string $login Login to check
+     * @param string $nickname nickname to check
      * @return bool
      */
-    private static function isRegistered($login)
+    private static function isRegistered($email)
     {
         // Connect to DB
         $DBH = DB::$conn;
-        
-        // Select entry with this login
-        $DBH->selectEntry( "users", array( 'login' => $login ), "login" );
+
+        // Select entry with this nickname
+        $DBH->selectEntry( "users", array( 'email' => $email ), "email" );
 
         if ( $DBH->stmt->rowCount() < 1 )
         {
