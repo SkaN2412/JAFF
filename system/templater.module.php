@@ -4,7 +4,8 @@
  * Dependencies: inviExceptions
  * Documentation can be found in https://github.com/SkaN2412/inviCMS/wiki/%D0%A0%D0%B0%D0%B1%D0%BE%D1%82%D0%B0-%D1%81-inviTemplater
  */
-class inviTemplater {
+class inviTemplater
+{
 	//Metadata
 	public $name = "inviTemplater";
 	public $version = "3.4beta";
@@ -15,89 +16,100 @@ class inviTemplater {
 	//Variables for current template, fills with method "parse"
 	private $vars;
 
-    /**
-     * Defines directory with templates
-     *
-     * @param string $dir
-     * @throws inviException
-     */
-    public function __construct($dir = "") {
-        if ( $dir == "" )
-        {
-            $dir = Config::get("system/templatesDir");
-        }
-        
-		if ($dir[strlen($dir)-1] != DS)
+	/**
+	 * Defines directory with templates
+	 *
+	 * @param string $dir
+	 *
+	 * @throws inviException
+	 */
+	public function __construct( $dir = "" )
+	{
+		if ( $dir == "" )
+		{
+			$dir = Config::get( "system/templatesDir" );
+		}
+
+		if ( $dir[strlen( $dir ) - 1] != DS )
 		{
 			$dir .= DS;
 		}
 		//If directory doesn't exist, throw exception
-		if (!is_dir($dir))
+		if ( ! is_dir( $dir ) )
 		{
 			throw new inviException( inviErrors::FILE_NOT_FOUND );
 		}
 		//Set $this->dir
-		$this->dir = $dir.DS;
+		$this->dir = $dir . DS;
 	}
 
 	/**
-     * Loads template which should parse
-     * 
-     * @param string $page Template to load without extension
-     * @throws inviException
-     * @return void
-     */
-	public function load($page) {
+	 * Loads template which should parse
+	 *
+	 * @param string $page Template to load without extension
+	 *
+	 * @throws inviException
+	 * @return void
+	 */
+	public function load( $page )
+	{
 		//Check existing file and check, is it with .htm or .html extension
-		if (file_exists($this->dir.$page.".htm"))
+		if ( file_exists( $this->dir . $page . ".htm" ) )
 		{
-			$file = $this->dir.$page.".htm";
-		} elseif (file_exists($this->dir.$page.".html")) {
-			$file = $this->dir.$page.".html";
-		} else {
-			throw new inviException(10001, "File {$this->dir}{$page}.htm(l) does not exist.");
+			$file = $this->dir . $page . ".htm";
+		} elseif ( file_exists( $this->dir . $page . ".html" ) )
+		{
+			$file = $this->dir . $page . ".html";
+		} else
+		{
+			throw new inviException( 10001, "File {$this->dir}{$page}.htm(l) does not exist." );
 		}
 
 		//Fill $this->content with file contents
-		$this->content = file_get_contents($file);
+		$this->content = file_get_contents( $file );
 	}
 
-    /**
-     * Start parsing
-     *
-     * @param array $vars Data to insert to template
-     * @return string mixed Filled array
-     * @throws inviException
-     */
-    public function parse($vars) {
+	/**
+	 * Start parsing
+	 *
+	 * @param array $vars Data to insert to template
+	 *
+	 * @return string mixed Filled array
+	 * @throws inviException
+	 */
+	public function parse( $vars )
+	{
 		//Vars must be an array!
-		if (!is_array($vars))
+		if ( ! is_array( $vars ) )
 		{
 			throw new inviException( inviErrors::TMPLTR_NOT_ARRAY_GIVEN );
 		}
 		$this->vars = $vars;
-		unset($vars);
+		unset( $vars );
 		//Parsing file and returning final value
-		return $this->parseCode($this->content);
+		return $this->parseCode( $this->content );
 	}
 
 	//Main function that parses all the content
-	private function parseCode($code) {
+	private function parseCode( $code )
+	{
 		//I don't know, how is working this template, but it works.
-		preg_match_all('/\{(case|array|var|include)=\'(.*?)\'\}(((?:(?!\{\/?\1=\'\2\').)*)\{\/\1=\'\2\'\})?/s', $code, $matches);
-		for ($i=0; $i<count($matches[0]); $i++) { //Parsing all the conditions with their methods
-			switch ($matches[1][$i]) {
+		preg_match_all( '/\{(case|array|var|include)=\'(.*?)\'\}(((?:(?!\{\/?\1=\'\2\').)*)\{\/\1=\'\2\'\})?/s', $code, $matches );
+		for ( $i = 0; $i < count( $matches[0] ); $i ++ )
+		{ //Parsing all the conditions with their methods
+			switch ( $matches[1][$i] )
+			{
 				case "case":
-					$code = $this->parseCase($matches[0][$i], $code);
+					$code = $this->parseCase( $matches[0][$i], $code );
 					break;
 				case "array":
-					$code = $this->parseCycle($matches[0][$i], $code);
+					$code = $this->parseCycle( $matches[0][$i], $code );
 					break;
 				case "var":
-					$code = $this->parseVar($matches[0][$i], $code);
+					$code = $this->parseVar( $matches[0][$i], $code );
 					break;
 				case "include":
-					$code = $this->parseInclude($matches[0][$i], $code);
+					$code = $this->parseInclude( $matches[0][$i], $code );
 					break;
 			}
 		}
@@ -105,241 +117,273 @@ class inviTemplater {
 	}
 
 	//Insert variable. It's simple, I don't want to comment it...
-	private function parseVar($match, $code) {
-		preg_match('/\{var=\'(.*?)\'\}/', $match, $var);
-		if (!isset($this->vars[$var[1]]))
+	private function parseVar( $match, $code )
+	{
+		preg_match( '/\{var=\'(.*?)\'\}/', $match, $var );
+		if ( ! isset( $this->vars[$var[1]] ) )
 		{
 			throw new inviException( inviErrors::TMPLTR_VAR_NOT_FOUND );
 		}
-		$code = str_replace($match, $this->vars[$var[1]], $code);
+		$code = str_replace( $match, $this->vars[$var[1]], $code );
 		return $code;
 	}
 
 	//It loads given template and parse it with variables from $this->vars. Method is similar with method "load"
-	private function parseInclude($match, $code) {
-		preg_match('/\{include=\'(.*?)\'\}/', $match, $matches);
-		if (file_exists($this->dir.$matches[1].".htm"))
+	private function parseInclude( $match, $code )
+	{
+		preg_match( '/\{include=\'(.*?)\'\}/', $match, $matches );
+		if ( file_exists( $this->dir . $matches[1] . ".htm" ) )
 		{
-			$file = $this->dir.$matches[1].".htm";
-        	} elseif (file_exists($this->dir.$matches[1].".html")) {
-			$file = $this->dir.$matches[1].".html";
-        	} else {
-			throw new inviException( inviErrors::FILE_NOT_FOUND, "File ".$this->dir.$matches[1].".htm(l) does not exist" );
+			$file = $this->dir . $matches[1] . ".htm";
+		} elseif ( file_exists( $this->dir . $matches[1] . ".html" ) )
+		{
+			$file = $this->dir . $matches[1] . ".html";
+		} else
+		{
+			throw new inviException( inviErrors::FILE_NOT_FOUND, "File " . $this->dir . $matches[1] . ".htm(l) does not exist" );
 		}
 
-		$content = file_get_contents($file);
+		$content = file_get_contents( $file );
 		//Recursive parsing of code
-		$content = $this->parseCode($content);
-		$code = str_replace($matches[0], $content, $code);
+		$content = $this->parseCode( $content );
+		$code = str_replace( $matches[0], $content, $code );
 		return $code;
 	}
 
 	//This method parses cycles with multi-dimensional arrays
-	private function parseCycle($match, $code) {
-		preg_match('|\{array=\'(\w+)\'\}((?:(?!\{/?array).)*){/array=\'\1\'}|s', $match, $matches);
-		if (!isset($this->vars[$matches[1]]))
+	private function parseCycle( $match, $code )
+	{
+		preg_match( '|\{array=\'(\w+)\'\}((?:(?!\{/?array).)*){/array=\'\1\'}|s', $match, $matches );
+		if ( ! isset( $this->vars[$matches[1]] ) )
 		{
 			throw new inviException( inviErrors::TMPLTR_VAR_NOT_FOUND );
 		}
-		if (!is_array($this->vars[$matches[1]]))
+		if ( ! is_array( $this->vars[$matches[1]] ) )
 		{
 			throw new inviException( inviErrors::TMPLTR_VAR_NOT_ARRAY );
 		}
-		if (!isset($this->vars[$matches[1]][0]) || !is_array($this->vars[$matches[1]][0]))
+		if ( ! isset( $this->vars[$matches[1]][0] ) || ! is_array( $this->vars[$matches[1]][0] ) )
 		{
-			throw new inviException( inviErrors::TMPLTR_ARRAY_1DIM, "Array $".$matches[1]." is not multi-dimensional");
+			throw new inviException( inviErrors::TMPLTR_ARRAY_1DIM, "Array $" . $matches[1] . " is not multi-dimensional" );
 		}
 		$coden = "";
 		//$coden (code new) is temp varible, which will have final content for replacing in $code. $temp is one-cycle variable, which will have only one entry and add it to $coden.
-		for ($c=0; $c<count($this->vars[$matches[1]]); $c++) {
+		for ( $c = 0; $c < count( $this->vars[$matches[1]] ); $c ++ )
+		{
 			$temp = $matches[2];
 			//Replace all the entries with array
-			foreach ($this->vars[$matches[1]][$c] as $key=>$value) {
-				$temp = str_replace("{".$key."}", $value, $temp);
+			foreach ( $this->vars[$matches[1]][$c] as $key => $value )
+			{
+				$temp = str_replace( "{" . $key . "}", $value, $temp );
 			}
-			$temp = $this->parseCode($temp);
+			$temp = $this->parseCode( $temp );
 			$coden .= $temp;
 		}
-		$code = str_replace($matches[0], $coden, $code);
-		$code = $this->parseCode($code);
+		$code = str_replace( $matches[0], $coden, $code );
+		$code = $this->parseCode( $code );
 		return $code;
 	}
 
 	//Parsing all the cases. VERY big method, will be shorted in time...
-	private function parseCase($match, $code) {
-		preg_match('/\{case=\'([0-9A-Za-z_]+)(==|!=|<=|>=|<|>|\|isset\|)([0-9A-Za-z_]+)\'\}((?:(?!\{\/?case=\'\1\2\3\').)*)\{\/case=\'\1\2\3\'\}/s', $match, $matches);
-		switch ($matches[2]) {
+	private function parseCase( $match, $code )
+	{
+		preg_match( '/\{case=\'([0-9A-Za-z_]+)(==|!=|<=|>=|<|>|\|isset\|)([0-9A-Za-z_]+)\'\}((?:(?!\{\/?case=\'\1\2\3\').)*)\{\/case=\'\1\2\3\'\}/s', $match, $matches );
+		switch ( $matches[2] )
+		{
 			case "==":
-				if (!isset($this->vars[$matches[1]]))
+				if ( ! isset( $this->vars[$matches[1]] ) )
 				{
-					throw new inviException( inviErrors::TMPLTR_VAR_NOT_FOUND, "Variable $".$matches[1]." does not exist");
+					throw new inviException( inviErrors::TMPLTR_VAR_NOT_FOUND, "Variable $" . $matches[1] . " does not exist" );
 				}
-				if (isset($this->vars[$matches[3]])) {
-					if ($this->vars[$matches[1]] == $this->vars[$matches[3]]) {
-						$matches[4] = parseCode($matches[4]);
-						$code = str_replace($matches[0], $matches[4], $code);
+				if ( isset( $this->vars[$matches[3]] ) )
+				{
+					if ( $this->vars[$matches[1]] == $this->vars[$matches[3]] )
+					{
+						$matches[4] = parseCode( $matches[4] );
+						$code = str_replace( $matches[0], $matches[4], $code );
+					} else
+					{
+						$code = str_replace( $matches[0], " ", $code );
 					}
-					else {
-						$code = str_replace($matches[0], " ", $code);
-					}
-				}
-				else {
-					if ($this->vars[$matches[1]] == $matches[3]) {
-						$matches[4] = $this->parseCode($matches[4]);
-						$code = str_replace($matches[0], $matches[4], $code);
-					}
-					else {
-						$code = str_replace($matches[0], " ", $code);
+				} else
+				{
+					if ( $this->vars[$matches[1]] == $matches[3] )
+					{
+						$matches[4] = $this->parseCode( $matches[4] );
+						$code = str_replace( $matches[0], $matches[4], $code );
+					} else
+					{
+						$code = str_replace( $matches[0], " ", $code );
 					}
 				}
 				break;
 			case "!=":
-				if (!isset($this->vars[$matches[1]]))
+				if ( ! isset( $this->vars[$matches[1]] ) )
 				{
-					throw new inviException( inviErrors::TMPLTR_VAR_NOT_FOUND, "Variable $".$matches[1]." does not exist");
+					throw new inviException( inviErrors::TMPLTR_VAR_NOT_FOUND, "Variable $" . $matches[1] . " does not exist" );
 				}
-				if (isset($this->vars[$matches[3]])) {
-					if ($this->vars[$matches[1]] != $this->vars[$matches[3]]) {
-						$matches[4] = $this->parseCode($matches[4]);
-						$code = str_replace($matches[0], $matches[4], $code);
+				if ( isset( $this->vars[$matches[3]] ) )
+				{
+					if ( $this->vars[$matches[1]] != $this->vars[$matches[3]] )
+					{
+						$matches[4] = $this->parseCode( $matches[4] );
+						$code = str_replace( $matches[0], $matches[4], $code );
+					} else
+					{
+						$code = str_replace( $matches[0], " ", $code );
 					}
-					else {
-						$code = str_replace($matches[0], " ", $code);
-					}
-				}
-				else {
-					if ($this->vars[$matches[1]] != $matches[3]) {
-						$matches[4] = $this->parseCode($matches[4]);
-						$code = str_replace($matches[0], $matches[4], $code);
-					}
-					else {
-						$code = str_replace($matches[0], " ", $code);
+				} else
+				{
+					if ( $this->vars[$matches[1]] != $matches[3] )
+					{
+						$matches[4] = $this->parseCode( $matches[4] );
+						$code = str_replace( $matches[0], $matches[4], $code );
+					} else
+					{
+						$code = str_replace( $matches[0], " ", $code );
 					}
 				}
 				break;
 			case "<=":
-				if (!isset($this->vars[$matches[1]]))
+				if ( ! isset( $this->vars[$matches[1]] ) )
 				{
-					throw new inviException( inviErrors::TMPLTR_VAR_NOT_FOUND, "Variable $".$matches[1]." does not exist");
+					throw new inviException( inviErrors::TMPLTR_VAR_NOT_FOUND, "Variable $" . $matches[1] . " does not exist" );
 				}
-				if (isset($this->vars[$matches[3]])) {
-					if ($this->vars[$matches[1]] <= $this->vars[$matches[3]]) {
-						$matches[4] = $this->parseCode($matches[4]);
-						$code = str_replace($matches[0], $matches[4], $code);
+				if ( isset( $this->vars[$matches[3]] ) )
+				{
+					if ( $this->vars[$matches[1]] <= $this->vars[$matches[3]] )
+					{
+						$matches[4] = $this->parseCode( $matches[4] );
+						$code = str_replace( $matches[0], $matches[4], $code );
+					} else
+					{
+						$code = str_replace( $matches[0], " ", $code );
 					}
-					else {
-						$code = str_replace($matches[0], " ", $code);
-					}
-				}
-				else {
-					if ($this->vars[$matches[1]] <= $matches[3]) {
-						$matches[4] = $this->parseCode($matches[4]);
-						$code = str_replace($matches[0], $matches[4], $code);
-					}
-					else {
-						$code = str_replace($matches[0], " ", $code);
+				} else
+				{
+					if ( $this->vars[$matches[1]] <= $matches[3] )
+					{
+						$matches[4] = $this->parseCode( $matches[4] );
+						$code = str_replace( $matches[0], $matches[4], $code );
+					} else
+					{
+						$code = str_replace( $matches[0], " ", $code );
 					}
 				}
 				break;
 			case ">=":
-				if (!isset($this->vars[$matches[1]]))
+				if ( ! isset( $this->vars[$matches[1]] ) )
 				{
-					throw new inviException( inviErrors::TMPLTR_VAR_NOT_FOUND, "Variable $".$matches[1]." does not exist");
+					throw new inviException( inviErrors::TMPLTR_VAR_NOT_FOUND, "Variable $" . $matches[1] . " does not exist" );
 				}
-				if (isset($this->vars[$matches[3]])) {
-					if ($this->vars[$matches[1]] >= $this->vars[$matches[3]]) {
-						$matches[4] = $this->parseCode($matches[4]);
-						$code = str_replace($matches[0], $matches[4], $code);
+				if ( isset( $this->vars[$matches[3]] ) )
+				{
+					if ( $this->vars[$matches[1]] >= $this->vars[$matches[3]] )
+					{
+						$matches[4] = $this->parseCode( $matches[4] );
+						$code = str_replace( $matches[0], $matches[4], $code );
+					} else
+					{
+						$code = str_replace( $matches[0], " ", $code );
 					}
-					else {
-						$code = str_replace($matches[0], " ", $code);
-					}
-				}
-				else {
-					if ($this->vars[$matches[1]] >= $matches[3]) {
-						$matches[4] = $this->parseCode($matches[4]);
-						$code = str_replace($matches[0], $matches[4], $code);
-					}
-					else {
-						$code = str_replace($matches[0], " ", $code);
+				} else
+				{
+					if ( $this->vars[$matches[1]] >= $matches[3] )
+					{
+						$matches[4] = $this->parseCode( $matches[4] );
+						$code = str_replace( $matches[0], $matches[4], $code );
+					} else
+					{
+						$code = str_replace( $matches[0], " ", $code );
 					}
 				}
 				break;
 			case "<":
-				if (!isset($this->vars[$matches[1]]))
+				if ( ! isset( $this->vars[$matches[1]] ) )
 				{
-					throw new inviException(inviErrors::TMPLTR_VAR_NOT_FOUND, "Variable $".$matches[1]." does not exist");
+					throw new inviException( inviErrors::TMPLTR_VAR_NOT_FOUND, "Variable $" . $matches[1] . " does not exist" );
 				}
-				if (isset($this->vars[$matches[3]])) {
-					if ($this->vars[$matches[1]] < $this->vars[$matches[3]]) {
-						$matches[4] = $this->parseCode($matches[4]);
-						$code = str_replace($matches[0], $matches[4], $code);
+				if ( isset( $this->vars[$matches[3]] ) )
+				{
+					if ( $this->vars[$matches[1]] < $this->vars[$matches[3]] )
+					{
+						$matches[4] = $this->parseCode( $matches[4] );
+						$code = str_replace( $matches[0], $matches[4], $code );
+					} else
+					{
+						$code = str_replace( $matches[0], " ", $code );
 					}
-					else {
-						$code = str_replace($matches[0], " ", $code);
-					}
-				}
-				else {
-					if ($this->vars[$matches[1]] < $matches[3]) {
-						$matches[4] = $this->parseCode($matches[4]);
-						$code = str_replace($matches[0], $matches[4], $code);
-					}
-					else {
-						$code = str_replace($matches[0], " ", $code);
+				} else
+				{
+					if ( $this->vars[$matches[1]] < $matches[3] )
+					{
+						$matches[4] = $this->parseCode( $matches[4] );
+						$code = str_replace( $matches[0], $matches[4], $code );
+					} else
+					{
+						$code = str_replace( $matches[0], " ", $code );
 					}
 				}
 				break;
 			case ">":
-				if (!isset($this->vars[$matches[1]]))
+				if ( ! isset( $this->vars[$matches[1]] ) )
 				{
-					throw new inviException( inviErrors::TMPLTR_VAR_NOT_FOUND, "Variable $".$matches[1]." does not exist");
+					throw new inviException( inviErrors::TMPLTR_VAR_NOT_FOUND, "Variable $" . $matches[1] . " does not exist" );
 				}
-				if (isset($this->vars[$matches[3]])) {
-					if ($this->vars[$matches[1]] > $this->vars[$matches[3]]) {
-						$matches[4] = $this->parseCode($matches[4]);
-						$code = str_replace($matches[0], $matches[4], $code);
+				if ( isset( $this->vars[$matches[3]] ) )
+				{
+					if ( $this->vars[$matches[1]] > $this->vars[$matches[3]] )
+					{
+						$matches[4] = $this->parseCode( $matches[4] );
+						$code = str_replace( $matches[0], $matches[4], $code );
+					} else
+					{
+						$code = str_replace( $matches[0], " ", $code );
 					}
-					else {
-						$code = str_replace($matches[0], " ", $code);
-					}
-				}
-				else {
-					if ($this->vars[$matches[1]] > $matches[3]) {
-						$matches[4] = $this->parseCode($matches[4]);
-						$code = str_replace($matches[0], $matches[4], $code);
-					}
-					else {
-						$code = str_replace($matches[0], " ", $code);
+				} else
+				{
+					if ( $this->vars[$matches[1]] > $matches[3] )
+					{
+						$matches[4] = $this->parseCode( $matches[4] );
+						$code = str_replace( $matches[0], $matches[4], $code );
+					} else
+					{
+						$code = str_replace( $matches[0], " ", $code );
 					}
 				}
 				break;
 			case "|isset|":
-				if ($matches[3] == "true") {
-					if (isset($this->vars[$matches[1]])) {
-						$matches[4] = $this->parseCode($matches[4]);
-						$code = str_replace($matches[0], $matches[4], $code);
-					}
-					else {
-						$code = str_replace($matches[0], " ", $code);
+				if ( $matches[3] == "true" )
+				{
+					if ( isset( $this->vars[$matches[1]] ) )
+					{
+						$matches[4] = $this->parseCode( $matches[4] );
+						$code = str_replace( $matches[0], $matches[4], $code );
+					} else
+					{
+						$code = str_replace( $matches[0], " ", $code );
 					}
 				}
-				if ($matches[3] == "false") {
-					if (!isset($this->vars[$matches[1]])) {
-						$matches[4] = $this->parseCode($matches[4]);
-						$code = str_replace($matches[0], $matches[4], $code);
-					}
-					else {
-						$code = str_replace($matches[0], " ", $code);
+				if ( $matches[3] == "false" )
+				{
+					if ( ! isset( $this->vars[$matches[1]] ) )
+					{
+						$matches[4] = $this->parseCode( $matches[4] );
+						$code = str_replace( $matches[0], $matches[4], $code );
+					} else
+					{
+						$code = str_replace( $matches[0], " ", $code );
 					}
 				}
 				break;
 			default:
-				throw new inviException( inviErrors::TMPLTR_NOT_VALID_CASE, $matches[2]." is not a valid case");
+				throw new inviException( inviErrors::TMPLTR_NOT_VALID_CASE, $matches[2] . " is not a valid case" );
 		}
 		return $code;
 	}
 
-	public function uload() {
+	public function uload()
+	{
 		$this->vars = NULL;
 		$this->content = NULL;
 		return true;
