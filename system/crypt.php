@@ -1,5 +1,5 @@
 <?php
-class Crypt
+class JFCrypt
 {
     private $rounds = 15;
 
@@ -13,7 +13,7 @@ class Crypt
 
     public function hash( $input )
     {
-        switch ( Config::get( "system/cryptAlg" ) )
+        switch ( JFConfig::get( "system/cryptAlg" ) )
         {
             case "blowfish":
 

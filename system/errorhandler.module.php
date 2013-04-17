@@ -2,7 +2,7 @@
 /**
  * Class for handling errors
  */
-class inviErrorHandler
+class JFErrorHandler
 {
     protected static $printing = true;
     protected static $pf = "html";
@@ -110,7 +110,7 @@ class inviErrorHandler
 
     protected static function prepareData( $for )
     {
-        $templater = new inviTemplater();
+        $templater = new JFTemplater();
 
         switch ( $for )
         {

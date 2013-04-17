@@ -1,5 +1,5 @@
 <?php
-class inviErrors
+class JFError
 {
     // Base errors
     const FILE_NOT_FOUND         = 10001;

@@ -4,7 +4,7 @@ include_once( "system" . DS . "crypt.php" );
 /*
  * Module for registering user and authorizing him
  */
-class User
+class JFUser
 {
     /**
      * Adds user to database
@@ -13,7 +13,7 @@ class User
      * @param string $password Password
      * @param string $email    Email
      *
-     * @throws inviException
+     * @throws JFException
      */
     public static function register( $email, $password, $nickname )
     {
@@ -21,27 +21,27 @@ class User
         @session_start();
         if ( isset( $_SESSION['authorized'] ) )
         {
-            throw new inviException( inviErrors::USR_AUTHD );
+            throw new JFException( JFError::USR_AUTHD );
         }
 
         // Connect to DB
-        $DBH = inviPDO::$conn;
+        $DBH = JFPDO::$conn;
 
         // Check email given for existing
         if ( self::isRegistered( $email ) )
         {
-            throw new inviException( inviErrors::USR_REGISTERED );
+            throw new JFException( JFError::USR_REGISTERED );
         }
 
         // Check nickname given for existing
         $DBH->selectEntry( "users", array( 'nickname' => $nickname ) );
         if ( $DBH->stmt->rowCount() > 0 )
         {
-            throw new inviException( inviErrors::USR_NICKNAME_USED );
+            throw new JFException( JFError::USR_NICKNAME_USED );
         }
 
-        // All is right, user with data given does not exist. Now generate password hash with Bcrypt class
-        $crypt = new Crypt();
+        // All is right, user with data given does not exist. Now generate password hash with JFCrypt class
+        $crypt = new JFCrypt();
         $hash = $crypt->hash( $password );
 
         // And now insert data into DB
@@ -55,7 +55,7 @@ class User
      * Authorize user
      *
      * @return void
-     * @throws inviException
+     * @throws JFException
      */
     public static function authorize()
     {
@@ -71,21 +71,21 @@ class User
         }
 
         // Connect to DB
-        $DBH = inviPDO::$conn;
+        $DBH = JFPDO::$conn;
 
         // Get data from DB
         $userData = $DBH->selectEntry( "users", array( 'email' => $email ) );
         // If nothing is returned, throw exception
         if ( $DBH->stmt->rowCount() < 1 )
         {
-            throw new inviException( inviErrors::USR_NOT_REGISTERED );
+            throw new JFException( JFError::USR_NOT_REGISTERED );
         }
 
         // Check password correctness
-        $crypt = new Crypt();
+        $crypt = new JFCrypt();
         if ( ! $crypt->verify( $password, $userData['password'] ) )
         {
-            throw new inviException( inviErrors::USR_WRONG_PASSWD );
+            throw new JFException( JFError::USR_WRONG_PASSWD );
         }
 
         // Insert data into session variables
@@ -100,7 +100,7 @@ class User
      * @param string $email [optional] Email of user. If not given, will return current user's data
      *
      * @return array Array with data
-     * @throws inviException
+     * @throws JFException
      */
     public static function get( $email = NULL )
     {
@@ -112,7 +112,7 @@ class User
         }
 
         // Connect to DB
-        $DBH = inviPDO::$conn;
+        $DBH = JFPDO::$conn;
 
         // Select data
         $result = $DBH->selectEntry( "users", array( 'email' => $email ), "nickname, email, group" );
@@ -120,7 +120,7 @@ class User
         // If nothing is returned, throw exception
         if ( $DBH->stmt->rowCount() < 1 )
         {
-            throw new inviException( inviErrors::USR_NOT_REGISTERED );
+            throw new JFException( JFError::USR_NOT_REGISTERED );
         }
 
         return $result;
@@ -133,12 +133,12 @@ class User
      * @param string $newPassword New password
      *
      * @return void
-     * @throws inviException
+     * @throws JFException
      */
     public static function changePassword( $password, $newPassword )
     {
         // Connect to DB
-        $DBH = inviPDO::$conn;
+        $DBH = JFPDO::$conn;
 
         // Take nickname from class property
         $email = self::get()['email'];
@@ -147,10 +147,10 @@ class User
         $checkPassword = $DBH->selectEntry( "users", array( 'email' => $email ), "password" );
 
         // Check password correctness
-        $crypt = new Crypt();
+        $crypt = new JFCrypt();
         if ( $crypt->hash( $password ) != $checkPassword['password'] )
         {
-            throw new inviException( inviErrors::USR_WRONG_PASSWD );
+            throw new JFException( JFError::USR_WRONG_PASSWD );
         }
 
         // Update password in DB
@@ -183,7 +183,7 @@ class User
     private static function isRegistered( $email )
     {
         // Connect to DB
-        $DBH = inviPDO::$conn;
+        $DBH = JFPDO::$conn;
 
         // Select entry with this nickname
         $DBH->selectEntry( "users", array( 'email' => $email ), "email" );

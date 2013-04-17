@@ -6,16 +6,16 @@ try
     include_once( "system" . DS . "system.module.php" );
 
     // Include required modules
-    System::required( "errorhandler", "errors", "exceptions", "templater", "config", "invipdo" );
+    JFSystem::required( "errorhandler", "errors", "exceptions", "templater", "config", "pdo" );
 
     // If admin panel is asked, work in it's directory. Else - root directory
     if ( isset( $_GET['admin'] ) )
     {
-        System::required( "users" );
+        JFSystem::required( "users" );
 
-        User::authorize();
+        JFUser::authorize();
 
-        $group = User::get()['group'];
+        $group = JFUser::get()['group'];
         if ( $group !== "admin" )
         {
             header( "HTTP/1.1 404 Not Found" );
@@ -31,9 +31,9 @@ try
     // If there's any command given, execute it
     if ( isset( $_GET['query'] ) )
     {
-        System::required( "api" );
+        JFSystem::required( "api" );
         $query = $_GET['query'];
-        inviAPI::execute( $query );
+        JFAPI::execute( $query );
         exit;
     }
 

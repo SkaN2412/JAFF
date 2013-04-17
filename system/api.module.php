@@ -1,5 +1,5 @@
 <?php
-class inviAPI
+class JFAPI
 {
     public static function execute( $query )
     {

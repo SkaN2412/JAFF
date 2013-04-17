@@ -1,13 +1,12 @@
 <?php
 /*
- * inviTemplater 3.4beta
- * Dependencies: inviExceptions
- * Documentation can be found in https://github.com/SkaN2412/inviCMS/wiki/%D0%A0%D0%B0%D0%B1%D0%BE%D1%82%D0%B0-%D1%81-inviTemplater
+ * JFTemplater 3.4beta
+ * Dependencies: JFExceptions
  */
-class inviTemplater
+class JFTemplater
 {
     //Metadata
-    public $name = "inviTemplater";
+    public $name = "JFTemplater";
     public $version = "3.4beta";
     //Directory with templates
     private $dir;
@@ -21,13 +20,13 @@ class inviTemplater
      *
      * @param string $dir
      *
-     * @throws inviException
+     * @throws JFException
      */
     public function __construct( $dir = "" )
     {
         if ( $dir == "" )
         {
-            $dir = Config::get( "system/templatesDir" );
+            $dir = JFConfig::get( "system/templatesDir" );
         }
 
         if ( $dir[strlen( $dir ) - 1] != DS )
@@ -37,7 +36,7 @@ class inviTemplater
         //If directory doesn't exist, throw exception
         if ( ! is_dir( $dir ) )
         {
-            throw new inviException( inviErrors::FILE_NOT_FOUND );
+            throw new JFException( JFError::FILE_NOT_FOUND );
         }
         //Set $this->dir
         $this->dir = $dir . DS;
@@ -48,7 +47,7 @@ class inviTemplater
      *
      * @param string $page Template to load without extension
      *
-     * @throws inviException
+     * @throws JFException
      * @return void
      */
     public function load( $page )
@@ -62,7 +61,7 @@ class inviTemplater
             $file = $this->dir . $page . ".html";
         } else
         {
-            throw new inviException( 10001, "File {$this->dir}{$page}.htm(l) does not exist." );
+            throw new JFException( JFError::FILE_NOT_FOUND, "File {$this->dir}{$page}.htm(l) does not exist." );
         }
 
         //Fill $this->content with file contents
@@ -75,14 +74,14 @@ class inviTemplater
      * @param array $vars Data to insert to template
      *
      * @return string mixed Filled array
-     * @throws inviException
+     * @throws JFException
      */
     public function parse( $vars )
     {
         //Vars must be an array!
         if ( ! is_array( $vars ) )
         {
-            throw new inviException( inviErrors::TMPLTR_NOT_ARRAY_GIVEN );
+            throw new JFException( JFError::TMPLTR_NOT_ARRAY_GIVEN );
         }
         $this->vars = $vars;
         unset( $vars );
@@ -122,7 +121,7 @@ class inviTemplater
         preg_match( '/\{var=\'(.*?)\'\}/', $match, $var );
         if ( ! isset( $this->vars[$var[1]] ) )
         {
-            throw new inviException( inviErrors::TMPLTR_VAR_NOT_FOUND );
+            throw new JFException( JFError::TMPLTR_VAR_NOT_FOUND );
         }
         $code = str_replace( $match, $this->vars[$var[1]], $code );
         return $code;
@@ -140,7 +139,7 @@ class inviTemplater
             $file = $this->dir . $matches[1] . ".html";
         } else
         {
-            throw new inviException( inviErrors::FILE_NOT_FOUND, "File " . $this->dir . $matches[1] . ".htm(l) does not exist" );
+            throw new JFException( JFError::FILE_NOT_FOUND, "File " . $this->dir . $matches[1] . ".htm(l) does not exist" );
         }
 
         $content = file_get_contents( $file );
@@ -156,15 +155,15 @@ class inviTemplater
         preg_match( '|\{array=\'(\w+)\'\}((?:(?!\{/?array).)*){/array=\'\1\'}|s', $match, $matches );
         if ( ! isset( $this->vars[$matches[1]] ) )
         {
-            throw new inviException( inviErrors::TMPLTR_VAR_NOT_FOUND );
+            throw new JFException( JFError::TMPLTR_VAR_NOT_FOUND );
         }
         if ( ! is_array( $this->vars[$matches[1]] ) )
         {
-            throw new inviException( inviErrors::TMPLTR_VAR_NOT_ARRAY );
+            throw new JFException( JFError::TMPLTR_VAR_NOT_ARRAY );
         }
         if ( ! isset( $this->vars[$matches[1]][0] ) || ! is_array( $this->vars[$matches[1]][0] ) )
         {
-            throw new inviException( inviErrors::TMPLTR_ARRAY_1DIM, "Array $" . $matches[1] . " is not multi-dimensional" );
+            throw new JFException( JFError::TMPLTR_ARRAY_1DIM, "Array $" . $matches[1] . " is not multi-dimensional" );
         }
         $coden = "";
         //$coden (code new) is temp varible, which will have final content for replacing in $code. $temp is one-cycle variable, which will have only one entry and add it to $coden.
@@ -193,7 +192,7 @@ class inviTemplater
             case "==":
                 if ( ! isset( $this->vars[$matches[1]] ) )
                 {
-                    throw new inviException( inviErrors::TMPLTR_VAR_NOT_FOUND, "Variable $" . $matches[1] . " does not exist" );
+                    throw new JFException( JFError::TMPLTR_VAR_NOT_FOUND, "Variable $" . $matches[1] . " does not exist" );
                 }
                 if ( isset( $this->vars[$matches[3]] ) )
                 {
@@ -220,7 +219,7 @@ class inviTemplater
             case "!=":
                 if ( ! isset( $this->vars[$matches[1]] ) )
                 {
-                    throw new inviException( inviErrors::TMPLTR_VAR_NOT_FOUND, "Variable $" . $matches[1] . " does not exist" );
+                    throw new JFException( JFError::TMPLTR_VAR_NOT_FOUND, "Variable $" . $matches[1] . " does not exist" );
                 }
                 if ( isset( $this->vars[$matches[3]] ) )
                 {
@@ -247,7 +246,7 @@ class inviTemplater
             case "<=":
                 if ( ! isset( $this->vars[$matches[1]] ) )
                 {
-                    throw new inviException( inviErrors::TMPLTR_VAR_NOT_FOUND, "Variable $" . $matches[1] . " does not exist" );
+                    throw new JFException( JFError::TMPLTR_VAR_NOT_FOUND, "Variable $" . $matches[1] . " does not exist" );
                 }
                 if ( isset( $this->vars[$matches[3]] ) )
                 {
@@ -274,7 +273,7 @@ class inviTemplater
             case ">=":
                 if ( ! isset( $this->vars[$matches[1]] ) )
                 {
-                    throw new inviException( inviErrors::TMPLTR_VAR_NOT_FOUND, "Variable $" . $matches[1] . " does not exist" );
+                    throw new JFException( JFError::TMPLTR_VAR_NOT_FOUND, "Variable $" . $matches[1] . " does not exist" );
                 }
                 if ( isset( $this->vars[$matches[3]] ) )
                 {
@@ -301,7 +300,7 @@ class inviTemplater
             case "<":
                 if ( ! isset( $this->vars[$matches[1]] ) )
                 {
-                    throw new inviException( inviErrors::TMPLTR_VAR_NOT_FOUND, "Variable $" . $matches[1] . " does not exist" );
+                    throw new JFException( JFError::TMPLTR_VAR_NOT_FOUND, "Variable $" . $matches[1] . " does not exist" );
                 }
                 if ( isset( $this->vars[$matches[3]] ) )
                 {
@@ -328,7 +327,7 @@ class inviTemplater
             case ">":
                 if ( ! isset( $this->vars[$matches[1]] ) )
                 {
-                    throw new inviException( inviErrors::TMPLTR_VAR_NOT_FOUND, "Variable $" . $matches[1] . " does not exist" );
+                    throw new JFException( JFError::TMPLTR_VAR_NOT_FOUND, "Variable $" . $matches[1] . " does not exist" );
                 }
                 if ( isset( $this->vars[$matches[3]] ) )
                 {
@@ -377,7 +376,7 @@ class inviTemplater
                 }
                 break;
             default:
-                throw new inviException( inviErrors::TMPLTR_NOT_VALID_CASE, $matches[2] . " is not a valid case" );
+                throw new JFException( JFError::TMPLTR_NOT_VALID_CASE, $matches[2] . " is not a valid case" );
         }
         return $code;
     }

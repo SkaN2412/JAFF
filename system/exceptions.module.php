@@ -5,7 +5,7 @@
  * Extended exceptions tool for php
  */
 
-final class inviException extends Exception
+final class JFException extends Exception
 {
     //Metadata
     const NAME = "inviException";
@@ -21,6 +21,6 @@ final class inviException extends Exception
     {
         parent::__construct( $error, (int)$errno );
 
-        inviErrorHandler::handle( parent::getCode(), parent::getFile() . ":" . parent::getLine(), parent::getTraceAsString(), parent::getMessage() );
+        JFErrorHandler::handle( parent::getCode(), parent::getFile() . ":" . parent::getLine(), parent::getTraceAsString(), parent::getMessage() );
     }
 }

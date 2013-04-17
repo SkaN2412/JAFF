@@ -1,5 +1,5 @@
 <?php
-class Config
+class JFConfig
 {
     /**
      * get returns value for link given. If value doesn't exist, will be returned FALSE
@@ -96,7 +96,7 @@ class Config
         foreach ( $config as $k => $v )
         {
             $content .= "[{$k}]\n";
-            foreach ( $k as $name => $val )
+            foreach ( $v as $name => $val )
             {
                 $content .= "{$name} = ";
                 if ( is_numeric( $val ) )

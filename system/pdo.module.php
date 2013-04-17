@@ -4,7 +4,7 @@
  *
  * @author Andrey "SkaN" Kamozin <andreykamozin@gmail.com>
  */
-class inviPDO extends PDO
+class JFPDO extends PDO
 {
     /**
      * This variable init object of PDOStatement class
@@ -17,7 +17,7 @@ class inviPDO extends PDO
 
     public static function keep()
     {
-        self::$conn = new inviPDO();
+        self::$conn = new JFPDO();
     }
 
     /**
@@ -26,14 +26,14 @@ class inviPDO extends PDO
     public function __construct()
     {
         // Get database server data from config
-        $conn_data = Config::get( "database" );
+        $conn_data = JFConfig::get( "database" );
 
         try
         { // Try to connect
             parent::__construct( "mysql:host={$conn_data['server']};dbname={$conn_data['db']}", $conn_data['login'], $conn_data['password'] );
         } catch ( PDOException $e )
         { // If there's any errors, throw exception
-            throw new inviException( inviErrors::DB_CONN_FAIL, "[{$e->getCode}] {$e->getMessage}" );
+            throw new JFException( JFError::DB_CONN_FAIL, "[{$e->getCode()}] {$e->getMessage()}" );
         }
 
         // Errors will throw exceptions
@@ -348,7 +348,7 @@ class inviPDO extends PDO
      * @param array  $data  Array with data for statement, if any needed
      *
      * @return void
-     * @throws inviException
+     * @throws JFException
      */
     public function query( $query, $data = array() )
     {
@@ -362,7 +362,7 @@ class inviPDO extends PDO
         if ( $this->stmt->errorCode() != "00000" )
         {
             $error = $this->stmt->errorInfo();
-            throw new inviException( inviErrors::DB_EXEC_FAIL, "[{$error[0]}]: {$error[2]}" );
+            throw new JFException( JFError::DB_EXEC_FAIL, "[{$error[0]}]: {$error[2]}" );
         }
     }
 
@@ -402,4 +402,4 @@ class inviPDO extends PDO
     }
 }
 
-inviPDO::keep();
+JFPDO::keep();

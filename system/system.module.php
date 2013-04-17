@@ -4,7 +4,7 @@
  *
  * @author Andrey "SkaN" Kamozin <andreykamozin@gmail.com>
  */
-class System
+class JFSystem
 {
     /**
      * Method inserts your content into main template and prints it
@@ -17,7 +17,7 @@ class System
     public static function out( $title, $content )
     {
         // Init templater
-        $templater = new inviTemplater();
+        $templater = new JFTemplater();
 
         // Load page template
         $templater->load( "main" );
@@ -39,7 +39,7 @@ class System
 
             if ( ! file_exists( $m ) )
             {
-                inviErrorHandler::handle( inviErrors::FILE_NOT_FOUND, __FILE__ . ":" . __LINE__, "...", "Module {$m} not found" );
+                JFErrorHandler::handle( JFError::FILE_NOT_FOUND, __FILE__ . ":" . __LINE__, "...", "Module {$m} not found" );
             }
 
             include_once( $m );
