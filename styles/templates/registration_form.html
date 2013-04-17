@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta http-equiv="content-type" content="text/html; charset=utf8" />
+    <script src="styles/js/jquery.js"></script>
+    <script>
+        $(function(){$("#registration").submit(function(){
+            var email = $(this).children("#email").val();
+            var password = $(this).children("#password").val();
+            var login = $(this).children("#login").val();
+
+            if ( email == "" || login == "" || password == "" )
+            {
+                $("result").text("Необходимо заполнить все поля");
+            }
+
+            $.ajax({
+                url: "?query=users.Users.register",
+                type: "post",
+                data: {'email': email, 'nickname': login, 'password': password},
+                dataType: "json",
+                success: function(data){
+                    $("result").text(data['resultText']);
+                }
+            });
+
+            return false;
+        })});
+    </script>
+    <title>Регистрация администратора</title>
+    <style>
+        * {
+            font-family: Arial;
+        }
+
+        label {
+            display: inline-block;
+            width: 80px;
+        }
+
+        input[type="submit"] {
+            margin-left: 80px;
+        }
+    </style>
+</head>
+<body>
+
+<div id="result"></div>
+<form id="registration">
+    <h1>Регистрация администратора</h1>
+    <label for="email">Email: </label><input type="email" id="email" name="email" /><br />
+    <label for="password">Пароль: </label><input type="password" id="password" name="password" /><br />
+    <label for="login">Логин: </label><input type="text" id="login" name="login" /><br />
+    <input type="submit" value="Регистрация" />
+</form>
+
+</body>
+</html>

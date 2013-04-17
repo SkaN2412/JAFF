@@ -13,6 +13,13 @@ class inviPDO extends PDO
      */
     public $stmt;
 
+    public static $conn;
+
+    public static function keep()
+    {
+        self::$conn = new inviPDO();
+    }
+
     /**
      * Open connection with database
      */
@@ -394,3 +401,5 @@ class inviPDO extends PDO
         return $data;
     }
 }
+
+inviPDO::keep();

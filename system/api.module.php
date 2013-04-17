@@ -13,6 +13,8 @@ class inviAPI
         if ( in_array( $stack[0], $acceptedAjax ) && file_exists( "ajax" . DS . $stack[0] . ".php" ) )
         {
             include( "ajax" . DS . $stack[0] . ".php" );
+        } else {
+            echo "ajax" . DS . $stack[0] . ".php";
         }
 
         // Execute function

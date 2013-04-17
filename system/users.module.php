@@ -64,8 +64,7 @@ class User
         if ( isset( $_SESSION['authorized'] ) )
         {
             return;
-        } else
-        {
+        } else {
             // If there's nothing in session, get nickname and password from post variables
             $email = $_POST['email'];
             $password = $_POST['password'];

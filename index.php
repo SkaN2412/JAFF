@@ -6,23 +6,25 @@ try
     include_once( "system" . DS . "system.module.php" );
 
     // Include required modules
-    System::required( "errorhandler", "errors", "exceptions", "templater", "config", "invipdo", "dbkeeper" );
+    System::required( "errorhandler", "errors", "exceptions", "templater", "config", "invipdo" );
 
     // If admin panel is asked, work in it's directory. Else - root directory
     if ( isset( $_GET['admin'] ) )
     {
+        System::required( "users" );
+
         User::authorize();
 
         $group = User::get()['group'];
         if ( $group !== "admin" )
         {
             header( "HTTP/1.1 404 Not Found" );
-            include_once( $dir . "pages" . DS . "404.php" );
+            include_once( "pages" . DS . "404.php" );
+            exit;
         }
 
         $dir = "admin" . DS;
-    } else
-    {
+    } else {
         $dir = "";
     }
 
@@ -38,8 +40,7 @@ try
     if ( isset( $_GET['page'] ) )
     {
         $page = $_GET['page'];
-    } else
-    {
+    } else {
         $page = "main";
     }
 
@@ -50,8 +51,7 @@ try
 
         include_once( $dir . "pages" . DS . $page . ".php" );
         exit;
-    } else
-    {
+    } else {
         // If not, generate 404
 
         header( "HTTP/1.1 404 Not Found" );
@@ -59,7 +59,6 @@ try
         exit;
     }
 
-} catch ( Exception $e )
-{
+} catch ( Exception $e ) {
     print( "Unknown error." );
 }
