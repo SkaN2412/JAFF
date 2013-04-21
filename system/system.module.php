@@ -1,9 +1,4 @@
 <?php
-/**
- * Main class of inviCMS.
- *
- * @author Andrey "SkaN" Kamozin <andreykamozin@gmail.com>
- */
 class JFSystem
 {
     /**
@@ -29,6 +24,11 @@ class JFSystem
         print( $templater->parse( $params ) );
     }
 
+    /**
+     * Include any system module
+     *
+     * Usage: JFSystem::required(string $className1[, string $className2[, string $classNameN]])
+     */
     public static function required()
     {
         $modules = func_get_args();
@@ -44,5 +44,17 @@ class JFSystem
 
             include_once( $m );
         }
+    }
+
+    public static function loadPlugin( $name, $arg )
+    {
+        if ( ! file_exists( "plugins" . DS . $name . DS . "init.php" ) )
+        {
+            throw new JFException( JFError::PLUGIN_NOT_INSTALLED, "Plugin {$name} not installed or installation corrupted" );
+        }
+
+        include_once( "plugins" . DS . $name . DS . "init.php" );
+
+        return new $name($arg);
     }
 }

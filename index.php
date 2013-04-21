@@ -23,9 +23,9 @@ try
             exit;
         }
 
-        $dir = "admin" . DS;
+        define("ADMIN", TRUE);
     } else {
-        $dir = "";
+        define("ADMIN", FALSE);
     }
 
     // If there's any command given, execute it
@@ -45,6 +45,13 @@ try
     }
 
     $acceptedPages = file( "system" . DS . "acceptedpages", FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES );
+    if ( ADMIN )
+    {
+        $dir = "admin" . DS;
+    } else {
+        $dir = "";
+    }
+
     if ( file_exists( $dir . "pages" . DS . $page . ".php" ) && in_array( $page, $acceptedPages ) )
     {
         // If page exists and it's in the accepted list, execute it

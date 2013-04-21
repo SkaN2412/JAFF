@@ -3,6 +3,7 @@ class JFError
 {
     // Base errors
     const FILE_NOT_FOUND         = 10001;
+    const PLUGIN_NOT_INSTALLED   = 10014;
 
     // Database errors
     const DB_CONN_FAIL           = 10002;
