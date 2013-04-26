@@ -22,4 +22,7 @@ class JFError
     const TMPLTR_VAR_NOT_ARRAY   = 10011;
     const TMPLTR_ARRAY_1DIM      = 10012;
     const TMPLTR_NOT_VALID_CASE  = 10013;
+
+    // Pages management errors
+    const PGS_ALREADY_EXISTS     = 10015;
 }
