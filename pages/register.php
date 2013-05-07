@@ -1,5 +1,5 @@
 <?php
-$templater = new inviTemplater();
+$templater = new JFTemplater();
 
 $templater->load( "registration_form" );
 

@@ -15,6 +15,7 @@ class JFError
     const USR_NICKNAME_USED      = 10006;
     const USR_NOT_REGISTERED     = 10007;
     const USR_WRONG_PASSWD       = 10008;
+    const USR_NO_DATA_GIVEN      = 10016;
 
     // Templater errors
     const TMPLTR_NOT_ARRAY_GIVEN = 10009;

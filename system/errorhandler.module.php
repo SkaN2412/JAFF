@@ -142,3 +142,5 @@ class JFErrorHandler
         return $templater->parse( array( 'errno' => self::$errno, 'error' => self::$error, 'file' => self::$file, 'date' => self::$date, 'trace' => self::$trace ) );
     }
 }
+
+JFErrorHandler::__init( 3, "errors.log", "plain", "html" );

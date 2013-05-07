@@ -76,7 +76,7 @@ class JFTemplater
      * @return string mixed Filled array
      * @throws JFException
      */
-    public function parse( $vars )
+    public function parse( $vars = array() )
     {
         //Vars must be an array!
         if ( ! is_array( $vars ) )
@@ -85,7 +85,7 @@ class JFTemplater
         }
         $this->vars = $vars;
         unset( $vars );
-        //Parsing file and returning final value
+        //Parsing file and returning final contents
         return $this->parseCode( $this->content );
     }
 

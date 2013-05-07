@@ -64,10 +64,13 @@ class JFUser
         if ( isset( $_SESSION['authorized'] ) )
         {
             return;
-        } else {
+        } elseif ( isset( $_POST['email'], $_POST['password'] ) ) {
             // If there's nothing in session, get nickname and password from post variables
             $email = $_POST['email'];
             $password = $_POST['password'];
+        } else {
+            // Throw exception if nothing is given at all
+            throw new JFException( JFError::USR_NO_DATA_GIVEN );
         }
 
         // Connect to DB

@@ -1,15 +1,15 @@
 <?php
-class Users
+class ajaxUser
 {
     public static function register()
     {
-        System::required( "users" );
+        JFSystem::required( "users" );
 
         try{
             $return = array();
-            User::register( $_POST['email'], $_POST['password'], $_POST['nickname'] );
+            JFUser::register( $_POST['email'], $_POST['password'], $_POST['nickname'] );
             $return['resultText'] = "Пользователь зарегистрирован!";
-        } catch ( inviException $e ) {
+        } catch ( JFException $e ) {
             switch ($e->getCode())
             {
                 case 10005:
@@ -23,5 +23,19 @@ class Users
             }
         }
 
+    }
+
+    public static function auth()
+    {
+        JFSystem::required( "users" );
+
+        try{
+            JFUser::authorize();
+            $return['result'] = "OK";
+
+        } catch ( JFException $e ) {
+
+        }
+        return $return;
     }
 }

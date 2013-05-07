@@ -13,7 +13,18 @@ try
     {
         JFSystem::required( "users" );
 
-        JFUser::authorize();
+        try
+        {
+            JFUser::authorize();
+        } catch ( JFException $e ) {
+            switch ( $e->getCode() )
+            {
+                case 10016:
+                    include_once( "pages" . DS . "auth.php" );
+                    exit;
+            }
+        }
+
 
         $group = JFUser::get()['group'];
         if ( $group !== "admin" )
@@ -23,9 +34,9 @@ try
             exit;
         }
 
-        define("ADMIN", TRUE);
+        define( "ADMIN", TRUE );
     } else {
-        define("ADMIN", FALSE);
+        define( "ADMIN", FALSE );
     }
 
     // If there's any command given, execute it
@@ -62,7 +73,7 @@ try
         // If not, generate 404
 
         header( "HTTP/1.1 404 Not Found" );
-        include_once( $dir . "pages" . DS . "404.php" );
+        include_once( "pages" . DS . "404.php" );
         exit;
     }
 
