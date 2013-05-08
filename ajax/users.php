@@ -7,7 +7,7 @@ class ajaxUser
 
         try{
             $return = array();
-            JFUser::register( $_POST['email'], $_POST['password'], $_POST['nickname'] );
+            JFUser::register( $_POST['email'], $_POST['password'], $_POST['nickname'], "admin" );
             $return['resultText'] = "Пользователь зарегистрирован!";
         } catch ( JFException $e ) {
             switch ($e->getCode())
@@ -34,7 +34,7 @@ class ajaxUser
             $return['result'] = "OK";
 
         } catch ( JFException $e ) {
-
+            $return['result'] = $e->getCode() . " -> " . $e->getMessage();
         }
         return $return;
     }

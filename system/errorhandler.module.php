@@ -143,4 +143,4 @@ class JFErrorHandler
     }
 }
 
-JFErrorHandler::__init( 3, "errors.log", "plain", "html" );
+JFErrorHandler::__init( 0, "errors.log", "plain", "html" );

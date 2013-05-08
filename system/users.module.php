@@ -9,13 +9,14 @@ class JFUser
     /**
      * Adds user to database
      *
-     * @param string $nickname nickname wanted
-     * @param string $password Password
-     * @param string $email    Email
+     * @param string $nickname  nickname wanted
+     * @param string $password  Password
+     * @param string $email     Email
+     * @param string [OPTIONAL] User group, "user" or "admin"
      *
      * @throws JFException
      */
-    public static function register( $email, $password, $nickname )
+    public static function register( $email, $password, $nickname, $group = "user" )
     {
         // Check, is user authorized. If authorized, deny registration
         @session_start();
@@ -45,7 +46,16 @@ class JFUser
         $hash = $crypt->hash( $password );
 
         // And now insert data into DB
-        $DBH->insertData( "users", array( 'nickname' => $nickname, 'password' => $hash, 'email' => $email ) );
+        $data = array(
+            'nickname' => $nickname,
+            'password' => $hash,
+            'email' => $email
+        );
+        if ( $group !== "user" )
+        {
+            $data['group'] = $group;
+        }
+        $DBH->insertData( "users", $data );
 
         // Now authorize user
         self::authorize( $email, $password );
