@@ -55,6 +55,6 @@ class JFSystem
 
         include_once( "plugins" . DS . $name . DS . "init.php" );
 
-        return new $name($arg);
+        return new $name( $arg );
     }
 }

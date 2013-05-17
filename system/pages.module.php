@@ -1,5 +1,19 @@
 <?php
 class JFPages {
+    public static function getList()
+    {
+        $pages = scandir( "pages" );
+
+        // Parse file for JFSystem::required() and JFTemplater::load() usages
+        $list = array();
+        foreach ( $pages as $name )
+        {
+            $list[$name]['templates'] = self::templatesUsages( $name );
+        }
+
+        return $list;
+    }
+
     public static function add( $name, $content )
     {
         $file = "pages" . DS . $name . ".php";
@@ -65,5 +79,33 @@ class JFPages {
         }
 
         file_put_contents( $file, $content );
+    }
+
+    private static function dependsOn( $page )
+    {
+        $string = file_get_contents( "pages" . DS . $page . ".php" );
+
+        preg_match_all( '@JFSystem::required\(([^)]*)\);@i', $string, $matches );
+
+        $return = array();
+        for ( $i = 0; $i < count( $matches[1] ); $i++ )
+        {
+            preg_match_all( "@['\"]([A-z0-9_-]*)['\"]@", $matches[1][$i], $temp );
+            $return = array_merge( $return, $temp[1] );
+        }
+        $return = array_unique( $return );
+        // TODO: dependencies on plugins
+        return $return;
+    }
+
+    private static function templatesUsages( $page )
+    {
+        $string = file_get_contents( "pages" . DS . $page . ".php" );
+
+        preg_match_all( '@\$templater->load\( ?"([^)]*)" ?\);@i', $string, $matches );
+
+        $matches = array_unique( $matches[1] );
+
+        return $matches;
     }
 }
